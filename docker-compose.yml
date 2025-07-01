@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    container_name: monitor-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: monitor
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: monitor-api
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/monitor"
+      JWT_SECRET: "chave-super-secreta"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    command: ["npm", "run", "dev"]
+
+volumes:
+  pgdata:
