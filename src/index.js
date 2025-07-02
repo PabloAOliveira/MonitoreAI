@@ -1,6 +1,7 @@
 import express from "express";
 import authRoutes from "./infrastructure/http/routes/authRoutes.js";
 import siteRoutes from "./infrastructure/http/routes/siteRoutes.js";
+import "./infrastructure/scheduler/siteStatusScheduler.js";
 
 const app = express();
 app.use(express.json());
