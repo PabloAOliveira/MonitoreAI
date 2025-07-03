@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, plan } = req.body;
+    const { name, email, password, plan, whatsapp } = req.body;
 
     if (!name || !email || !password || !plan) {
       return res
@@ -27,8 +27,8 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, plan },
-      select: { id: true, name: true, email: true, plan: true },
+      data: { name, email, password: hashedPassword, plan, whatsapp },
+      select: { id: true, name: true, email: true, plan: true, whatsapp: true },
     });
 
     res.status(201).json(user);
@@ -121,6 +121,24 @@ router.patch("/plan", auth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao atualizar plano" });
+  }
+});
+
+router.patch("/whatsapp", auth, async (req, res) => {
+  try {
+    const { whatsapp } = req.body;
+    const { id } = req.user;
+    if (!whatsapp) {
+      return res.status(400).json({ message: "WhatsApp é obrigatório" });
+    }
+    const user = await prisma.user.update({
+      where: { id },
+      data: { whatsapp },
+      select: { id: true, name: true, email: true, plan: true, whatsapp: true },
+    });
+    res.status(200).json({ message: "WhatsApp atualizado com sucesso", user });
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao atualizar WhatsApp" });
   }
 });
 

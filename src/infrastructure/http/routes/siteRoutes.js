@@ -3,6 +3,7 @@ import { prisma } from "../../../config/prisma.js";
 import { auth } from "../../../middleware/auth.js";
 
 import { updateSiteStatus } from "../../../application/updateSiteStatus.js";
+import { sendWhatsappAlert } from "../../services/whatsAppService.js";
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ router.post("/", auth, async (req, res) => {
       .status(400)
       .json({ message: "Intervalo mínimo para plano free é 60 minutos" });
   }
-  if (plan === "premium" && interval < 5) {
+  if (plan === "premium" && interval < 1) {
     return res
       .status(400)
       .json({ message: "Intervalo mínimo para plano premium é 5 minutos" });
@@ -91,6 +92,18 @@ router.delete("/:id", auth, async (req, res) => {
 
   await prisma.site.delete({ where: { id } });
   res.status(200).json({ message: "Site removido com sucesso" });
+});
+
+router.post("/test-whatsapp", async (req, res) => {
+  const { to, message } = req.body;
+  try {
+    await sendWhatsappAlert(to, message);
+
+    res.json({ message: "Mensagem enviada com sucesso!" });
+  } catch (error) {
+    console.error("Erro ao enviar WhatsApp:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;
