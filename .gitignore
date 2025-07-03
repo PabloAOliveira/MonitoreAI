@@ -1,0 +1,6 @@
+.envnode_modules/
+.env
+.env.*
+dist/
+coverage/
+npm-debug.log
