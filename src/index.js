@@ -10,3 +10,5 @@ app.use("/auth", authRoutes);
 app.use("/sites", siteRoutes);
 
 app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+
+// teste
