@@ -98,13 +98,15 @@ Para usar seu próprio domínio:
 **Soluções aplicadas no projeto:**
 - ✅ `binaryTargets` otimizado: `debian-openssl-3.0.x`
 - ✅ Versão Node.js fixada em 20.18.0 (arquivo `.node-version`)
-- ✅ Build command com limpeza de cache: `rm -rf node_modules/.prisma`
-- ✅ Comando de build simplificado
+- ✅ Adicionado script `postinstall` para gerar Prisma automaticamente
+- ✅ Comando de build otimizado com reinstalação forçada dos pacotes Prisma
+- ✅ Limpeza completa de cache e reinstalação de `@prisma/engines` e `@prisma/client`
 
 **Se ainda ocorrer:**
 1. No Dashboard do Render: Settings → "Clear build cache"
 2. Faça um novo deploy
 3. Verifique se a versão do Node está sendo respeitada nos logs
+4. Se ainda falhar, tente criar um novo serviço web do zero
 
 ### Erro de Build
 - Verifique se o `package.json` está correto
