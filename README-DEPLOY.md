@@ -95,10 +95,16 @@ Para usar seu próprio domínio:
 ## Troubleshooting
 
 ### Erro do Prisma: "Cannot find module '@prisma/engines'"
-**Solução aplicada no projeto:**
-- Configuramos `binaryTargets` corretos no `schema.prisma`
-- Comando de build otimizado para o Render
-- Se ainda ocorrer, tente fazer um novo deploy
+**Soluções aplicadas no projeto:**
+- ✅ `binaryTargets` otimizado: `debian-openssl-3.0.x`
+- ✅ Versão Node.js fixada em 20.18.0 (arquivo `.node-version`)
+- ✅ Build command com limpeza de cache: `rm -rf node_modules/.prisma`
+- ✅ Comando de build simplificado
+
+**Se ainda ocorrer:**
+1. No Dashboard do Render: Settings → "Clear build cache"
+2. Faça um novo deploy
+3. Verifique se a versão do Node está sendo respeitada nos logs
 
 ### Erro de Build
 - Verifique se o `package.json` está correto
