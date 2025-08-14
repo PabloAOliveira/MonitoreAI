@@ -98,6 +98,7 @@ Para usar seu próprio domínio:
 **Soluções aplicadas no projeto:**
 - ✅ `binaryTargets` otimizado: `debian-openssl-3.0.x`
 - ✅ Versão Node.js fixada em 20.18.0 (arquivo `.node-version`)
+- ✅ Especificado `rootDir: .` no `render.yaml` para garantir execução na raiz do projeto
 - ✅ Removido script `postinstall` problemático que causava erro durante npm install
 - ✅ Comando de build simplificado: `npm install && npx prisma generate && npx prisma migrate deploy`
 - ✅ Abordagem mais direta sem scripts automáticos que podem falhar
