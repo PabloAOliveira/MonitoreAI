@@ -95,13 +95,19 @@ Para usar seu próprio domínio:
 ## Troubleshooting
 
 ### Erro do Prisma: "Cannot find module '@prisma/engines'"
-**Soluções aplicadas no projeto:**
-- ✅ `binaryTargets` otimizado: `debian-openssl-3.0.x`
-- ✅ Versão Node.js fixada em 20.18.0 (arquivo `.node-version`)
-- ✅ Especificado `rootDir: .` no `render.yaml` para garantir execução na raiz do projeto
-- ✅ Removido script `postinstall` problemático que causava erro durante npm install
-- ✅ Comando de build simplificado: `npm install && npx prisma generate && npx prisma migrate deploy`
-- ✅ Abordagem mais direta sem scripts automáticos que podem falhar
+**SOLUÇÃO DEFINITIVA - Docker Runtime:**
+- ✅ **Migração para Docker**: Alterado `runtime: node` para `runtime: docker` no `render.yaml`
+- ✅ **Dockerfile Multi-stage**: Build otimizado que gera o Prisma Client corretamente:
+  - Stage 1: Instala dependências e gera Prisma Client
+  - Stage 2: Copia apenas arquivos necessários para produção
+- ✅ **Script de inicialização**: `scripts/start.sh` executa migrações antes de iniciar a app
+- ✅ **Isolamento completo**: Docker elimina problemas de path e dependências do ambiente Render
+
+**Por que Docker resolve o problema:**
+- Ambiente controlado e reproduzível
+- Prisma Client gerado no mesmo ambiente onde será executado
+- Eliminação de conflitos de path entre desenvolvimento e produção
+- Compatibilidade garantida com `debian-openssl-3.0.x`
 
 **Se ainda ocorrer:**
 1. No Dashboard do Render: Settings → "Clear build cache"
