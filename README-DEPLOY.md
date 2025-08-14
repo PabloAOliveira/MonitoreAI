@@ -98,9 +98,9 @@ Para usar seu próprio domínio:
 **Soluções aplicadas no projeto:**
 - ✅ `binaryTargets` otimizado: `debian-openssl-3.0.x`
 - ✅ Versão Node.js fixada em 20.18.0 (arquivo `.node-version`)
-- ✅ Adicionado script `postinstall` para gerar Prisma automaticamente
-- ✅ Comando de build otimizado com reinstalação forçada dos pacotes Prisma
-- ✅ Limpeza completa de cache e reinstalação de `@prisma/engines` e `@prisma/client`
+- ✅ Removido script `postinstall` problemático que causava erro durante npm install
+- ✅ Comando de build simplificado: `npm install && npx prisma generate && npx prisma migrate deploy`
+- ✅ Abordagem mais direta sem scripts automáticos que podem falhar
 
 **Se ainda ocorrer:**
 1. No Dashboard do Render: Settings → "Clear build cache"
