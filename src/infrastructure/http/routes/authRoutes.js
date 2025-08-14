@@ -15,7 +15,7 @@ router.post("/register", async (req, res) => {
         .status(400)
         .json({ message: "Todos os campos são obrigatórios" });
     }
-    if (!["free", "premium"].includes(plan)) {
+    if (!["free"].includes(plan)) {
       return res.status(400).json({ message: "Plano inválido" });
     }
 
