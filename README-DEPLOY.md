@@ -31,7 +31,10 @@ git push origin main
    - **Region**: escolha a mais próxima
    - **Plan**: Free
 4. Clique em "Create Database"
-5. **Importante**: Anote a URL de conexão que será gerada
+5. **Importante**: Após a criação, copie a **External Database URL** (não a Internal)
+   - Acesse o banco criado no Dashboard
+   - Na aba "Info", use a "External Database URL"
+   - Formato: `postgresql://user:password@host:port/database`
 
 ### 3. Criar o Web Service
 
@@ -39,7 +42,7 @@ git push origin main
 2. Conecte seu repositório Git
 3. Configure:
    - **Name**: `monitoreai-api`
-   - **Runtime**: Node
+   - **Language**: Node (não Docker!)
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
    - **Plan**: Free
@@ -50,7 +53,7 @@ Na seção "Environment Variables", adicione:
 
 ```
 NODE_ENV=production
-DATABASE_URL=[URL do banco criado no passo 2]
+DATABASE_URL=[URL EXTERNA do banco criado no passo 2]
 JWT_SECRET=[gere uma chave secreta forte]
 TWILIO_ACCOUNT_SID=[seu SID do Twilio]
 TWILIO_AUTH_TOKEN=[seu token do Twilio]
@@ -91,17 +94,31 @@ Para usar seu próprio domínio:
 
 ## Troubleshooting
 
+### Erro do Prisma: "Cannot find module '@prisma/engines'"
+**Solução aplicada no projeto:**
+- Configuramos `binaryTargets` corretos no `schema.prisma`
+- Comando de build otimizado para o Render
+- Se ainda ocorrer, tente fazer um novo deploy
+
 ### Erro de Build
 - Verifique se o `package.json` está correto
 - Confirme se todas as dependências estão listadas
+- Limpe o cache: Settings → "Clear build cache"
 
 ### Erro de Conexão com Banco
-- Verifique se a `DATABASE_URL` está correta
+- Verifique se a `DATABASE_URL` está correta (use a EXTERNA)
 - Confirme se o banco está rodando
+- Teste a conexão localmente primeiro
 
 ### Erro 503 (Service Unavailable)
 - Verifique os logs para identificar o problema
 - Confirme se a porta está configurada corretamente (`process.env.PORT`)
+- Aguarde alguns minutos - pode ser inicialização lenta
+
+### App "Dormindo" (Plano Free)
+- Normal após 15 min de inatividade
+- Primeira requisição pode demorar 30-60 segundos
+- Considere upgrade para plano pago se necessário
 
 ## Próximos Passos
 
