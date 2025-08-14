@@ -1,0 +1,711 @@
+openapi: 3.0.3
+info:
+  title: MonitoreAI API
+  description: |
+    API para monitoramento de sites com notificações automáticas.
+    
+    ## Funcionalidades
+    - Cadastro e autenticação de usuários
+    - Monitoramento automático de sites
+    - Notificações via WhatsApp
+    - Planos Free e Premium
+    - Histórico de mudanças de plano
+    
+    ## Autenticação
+    A API utiliza JWT (JSON Web Token) para autenticação. Após o login, inclua o token no header:
+    ```
+    Authorization: Bearer {seu_token}
+    ```
+  version: 1.0.0
+  contact:
+    name: MonitoreAI Support
+    email: support@monitoreai.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://monitoreai-api.onrender.com
+    description: Servidor de Produção
+  - url: http://localhost:3000
+    description: Servidor de Desenvolvimento
+
+paths:
+  /:
+    get:
+      tags:
+        - Health Check
+      summary: Verificar status da API
+      description: Endpoint para verificar se a API está funcionando
+      responses:
+        '200':
+          description: API funcionando corretamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+              example:
+                message: "MonitoreAI API está funcionando!"
+                status: "online"
+                timestamp: "2025-01-03T16:59:39.441Z"
+                version: "1.0.0"
+
+  /auth/register:
+    post:
+      tags:
+        - Autenticação
+      summary: Registrar novo usuário
+      description: Cria uma nova conta de usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+            example:
+              name: "João Silva"
+              email: "joao@email.com"
+              password: "minhasenha123"
+              plan: "free"
+              whatsapp: "+5511999999999"
+      responses:
+        '201':
+          description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Fazer login
+      description: Autentica usuário e retorna token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+            example:
+              email: "joao@email.com"
+              password: "minhasenha123"
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Email e senha obrigatórios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/plan:
+    patch:
+      tags:
+        - Usuário
+      summary: Alterar plano do usuário
+      description: Atualiza o plano do usuário (free ou premium)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanUpdate'
+            example:
+              plan: "premium"
+      responses:
+        '200':
+          description: Plano alterado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanUpdateResponse'
+        '400':
+          description: Plano inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/whatsapp:
+    patch:
+      tags:
+        - Usuário
+      summary: Atualizar WhatsApp
+      description: Atualiza o número do WhatsApp do usuário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatsAppUpdate'
+            example:
+              whatsapp: "+5511888888888"
+      responses:
+        '200':
+          description: WhatsApp atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatsAppUpdateResponse'
+        '400':
+          description: WhatsApp é obrigatório
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/delete:
+    delete:
+      tags:
+        - Usuário
+      summary: Deletar conta
+      description: Remove permanentemente a conta do usuário e todos os dados relacionados
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuário deletado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sites:
+    post:
+      tags:
+        - Sites
+      summary: Adicionar site para monitoramento
+      description: |
+        Adiciona um novo site para monitoramento.
+        
+        **Limitações por plano:**
+        - **Free**: 1 site máximo, intervalo mínimo 60 minutos
+        - **Premium**: Sites ilimitados, intervalo mínimo 1 minuto
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteCreate'
+            example:
+              url: "https://meusite.com"
+              interval: 60
+      responses:
+        '201':
+          description: Site adicionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Site'
+        '400':
+          description: Dados inválidos ou limitações do plano
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Limite de sites atingido (plano free)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Site já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Sites
+      summary: Listar sites do usuário
+      description: Retorna todos os sites cadastrados pelo usuário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de sites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+              example:
+                - id: "uuid-do-site"
+                  url: "https://meusite.com"
+                  interval: 60
+                  status: "online"
+                  userId: "uuid-do-usuario"
+                  createdAt: "2025-01-03T10:00:00.000Z"
+                  lastCheckedAt: "2025-01-03T11:00:00.000Z"
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sites/{id}/status:
+    get:
+      tags:
+        - Sites
+      summary: Verificar status de um site
+      description: Verifica o status atual de um site específico
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do site
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Status do site
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteStatus'
+              example:
+                status: "online"
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Site não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sites/{id}:
+    delete:
+      tags:
+        - Sites
+      summary: Remover site
+      description: Remove um site do monitoramento
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do site
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Site removido com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '401':
+          description: Token inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Site não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sites/test-whatsapp:
+    post:
+      tags:
+        - WhatsApp
+      summary: Testar envio de WhatsApp
+      description: Envia uma mensagem de teste via WhatsApp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatsAppTest'
+            example:
+              to: "whatsapp:+5511999999999"
+              message: "Teste de mensagem do MonitoreAI!"
+      responses:
+        '200':
+          description: Mensagem enviada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '500':
+          description: Erro ao enviar mensagem
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Token JWT obtido através do endpoint de login.
+        
+        Exemplo: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+  schemas:
+    HealthCheck:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensagem de status
+        status:
+          type: string
+          description: Status da API
+          enum: [online, offline]
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp da verificação
+        version:
+          type: string
+          description: Versão da API
+      required:
+        - message
+        - status
+        - timestamp
+        - version
+
+    UserRegister:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome completo do usuário
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          description: Email do usuário
+        password:
+          type: string
+          description: Senha do usuário
+          minLength: 6
+        plan:
+          type: string
+          description: Plano do usuário
+          enum: [free]
+          default: free
+        whatsapp:
+          type: string
+          description: Número do WhatsApp (opcional)
+          pattern: '^\+[1-9]\d{1,14}$'
+      required:
+        - name
+        - email
+        - password
+        - plan
+
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email do usuário
+        password:
+          type: string
+          description: Senha do usuário
+      required:
+        - email
+        - password
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID único do usuário
+        name:
+          type: string
+          description: Nome do usuário
+        email:
+          type: string
+          format: email
+          description: Email do usuário
+        plan:
+          type: string
+          description: Plano atual
+          enum: [free, premium]
+        whatsapp:
+          type: string
+          description: Número do WhatsApp
+          nullable: true
+      required:
+        - id
+        - name
+        - email
+        - plan
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token JWT para autenticação
+      required:
+        - token
+
+    PlanUpdate:
+      type: object
+      properties:
+        plan:
+          type: string
+          description: Novo plano
+          enum: [free, premium]
+      required:
+        - plan
+
+    PlanUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensagem de confirmação
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - message
+        - user
+
+    WhatsAppUpdate:
+      type: object
+      properties:
+        whatsapp:
+          type: string
+          description: Número do WhatsApp
+          pattern: '^\+[1-9]\d{1,14}$'
+      required:
+        - whatsapp
+
+    WhatsAppUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensagem de confirmação
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - message
+        - user
+
+    SiteCreate:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL do site a ser monitorado
+          example: "https://meusite.com"
+        interval:
+          type: integer
+          description: |
+            Intervalo de verificação em minutos.
+            - Plano Free: mínimo 60 minutos
+            - Plano Premium: mínimo 1 minuto
+          minimum: 1
+          example: 60
+      required:
+        - url
+        - interval
+
+    Site:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID único do site
+        url:
+          type: string
+          format: uri
+          description: URL do site
+        interval:
+          type: integer
+          description: Intervalo de verificação em minutos
+        status:
+          type: string
+          description: Status atual do site
+          enum: [unknown, online, offline]
+        userId:
+          type: string
+          format: uuid
+          description: ID do usuário proprietário
+        createdAt:
+          type: string
+          format: date-time
+          description: Data de criação
+        lastCheckedAt:
+          type: string
+          format: date-time
+          description: Última verificação
+          nullable: true
+      required:
+        - id
+        - url
+        - interval
+        - status
+        - userId
+        - createdAt
+
+    SiteStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status atual do site
+          enum: [online, offline]
+      required:
+        - status
+
+    WhatsAppTest:
+      type: object
+      properties:
+        to:
+          type: string
+          description: Número de destino no formato WhatsApp
+          pattern: '^whatsapp:\+[1-9]\d{1,14}$'
+          example: "whatsapp:+5511999999999"
+        message:
+          type: string
+          description: Mensagem a ser enviada
+          maxLength: 1000
+      required:
+        - to
+        - message
+
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensagem de sucesso
+      required:
+        - message
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Descrição do erro
+        error:
+          type: string
+          description: Detalhes técnicos do erro (opcional)
+      required:
+        - message
+
+tags:
+  - name: Health Check
+    description: Verificação de status da API
+  - name: Autenticação
+    description: Endpoints de registro e login
+  - name: Usuário
+    description: Gerenciamento de conta do usuário
+  - name: Sites
+    description: Gerenciamento de sites monitorados
+  - name: WhatsApp
+    description: Funcionalidades de notificação via WhatsApp
