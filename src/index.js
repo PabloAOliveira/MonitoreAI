@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import authRoutes from "./infrastructure/http/routes/authRoutes.js";
@@ -11,4 +14,5 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/sites", siteRoutes);
 
-app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
