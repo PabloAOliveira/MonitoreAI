@@ -1,10 +1,10 @@
 # 🚀 MonitoreAI
 
-Uma API completa para monitoramento de sites com notificações automáticas via WhatsApp e sistema de planos diferenciados.
+Uma API completa para monitoramento de sites com notificações automáticas via WhatsApp, Gmail e sistema de planos diferenciados.
 
 ## 📋 Sobre o Projeto
 
-O MonitoreAI é uma solução robusta para monitoramento de sites que oferece verificação automática de status, notificações via WhatsApp e um sistema de planos (Free e Premium) com diferentes limitações e funcionalidades.
+O MonitoreAI é uma solução robusta para monitoramento de sites que oferece verificação automática de status, notificações via WhatsApp e Gmail, um sistema de planos (Free e Premium) com diferentes limitações e funcionalidades.
 
 ## 🛠️ Tecnologias Utilizadas
 
